@@ -15,7 +15,7 @@
     "@slack/bolt": "^3.11.0",
     "dotenv": "^16.0.1",
     "punycode": "^2.1.1",
-    "socket.io": "^4.5.1"
+    "pusher": "^5.1.1-beta"
   },
   "devDependencies": {
     "nodemon": "^2.0.16"

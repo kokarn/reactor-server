@@ -1,5 +1,5 @@
 const { App } = require('@slack/bolt');
-const io = require('socket.io')();
+const Pusher = require('pusher');
 
 const emoji = require('./modules/emoji');
 
@@ -8,23 +8,20 @@ const app = new App({
     token: process.env.SLACK_BOT_TOKEN,
 });
 
-io.on('connection', (client) => {
-    console.log('Client connected');
-
-    client.on('listen', (roomId) => {
-        console.log(`Connecting client to ${roomId}`);
-        client.join(roomId);
-        io.to(roomId).emit('reaction', '🔗');        
-    });
+const pusher = new Pusher({
+    appId: puser.env.PUSHER_APP_ID,
+    key: '518ab0476ccf565431b1',
+    secret: process.env.PUSHER_SECRET,
+    cluster: 'mt1',
+    // useTLS: USE_TLS, // optional, defaults to false
+    // encryptionMasterKeyBase64: ENCRYPTION_MASTER_KEY, // a base64 string which encodes 32 bytes, used to derive the per-channel encryption keys (see below!)
 });
-
-io.listen(3001);
 
 (async () => {
     await app.start(process.env.PORT || 3000);
 
     app.event('reaction_added', ({payload}) => {
-        // console.log(payload);
+        console.log(payload);
 
         let emojiName = payload.reaction;
 
@@ -32,14 +29,13 @@ io.listen(3001);
             emojiName = emojiName.split('::')[0];
         }
 
-        // console.log(emojiName);
         const reactionEmoji = emoji(emojiName);
 
         if(reactionEmoji.length === 0){
             return true;
         }
 
-        io.to(payload.item_user).emit('reaction', reactionEmoji);
+        pusher.trigger(payload.item_user, 'reaction', reactionEmoji);
     });
 
     console.log(`⚡️ Bolt app is running on port ${process.env.PORT || 3000}!`);
