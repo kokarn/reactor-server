@@ -1,63 +1,45 @@
-const { App, ExpressReceiver } = require('@slack/bolt');
+const { App } = require('@slack/bolt');
+const io = require('socket.io')();
 
 const emoji = require('./modules/emoji');
-
-const MY_USER_ID = 'U02CRLC7A5C';
-
-const messageList = [
-    {
-        id: `${new Date()}`,
-        emoji: '👍',
-        uid: MY_USER_ID,
-        timestamp: new Date(),
-    },
-];
-
-const receiver = new ExpressReceiver({
-    signingSecret: process.env.SLACK_SIGNING_SECRET,
-});
 
 const app = new App({
     signingSecret: process.env.SLACK_SIGNING_SECRET,
     token: process.env.SLACK_BOT_TOKEN,
-    receiver: receiver,
 });
 
+io.on('connection', (client) => {
+    console.log('Client connected');
+
+    client.on('listen', (roomId) => {
+        console.log(`Connecting client to ${roomId}`);
+        client.join(roomId);
+        io.to(roomId).emit('reaction', '🔗');        
+    });
+});
+
+io.listen(3001);
+
 (async () => {
-    // Start the app
     await app.start(process.env.PORT || 3000);
 
     app.event('reaction_added', ({payload}) => {
-        if(payload.item_user !== MY_USER_ID){
-            return true;
-        }
+        // console.log(payload);
 
         let emojiName = payload.reaction;
-
 
         if(emojiName.includes('::')){
             emojiName = emojiName.split('::')[0];
         }
 
-        console.log(emojiName);
+        // console.log(emojiName);
         const reactionEmoji = emoji(emojiName);
 
         if(reactionEmoji.length === 0){
             return true;
         }
 
-        console.log(reactionEmoji);
-
-        messageList.unshift({
-            id: `${new Date()}`,
-            emoji: reactionEmoji,
-            uid: MY_USER_ID,
-            timestamp: new Date(),
-        });
-    });
-
-    receiver.router.get('/messages', (req, res) => {
-        res.json(messageList);
+        io.to(payload.item_user).emit('reaction', reactionEmoji);
     });
 
     console.log(`⚡️ Bolt app is running on port ${process.env.PORT || 3000}!`);
