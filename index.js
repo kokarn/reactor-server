@@ -10,7 +10,7 @@ const app = new App({
 });
 
 const pusher = new Pusher({
-    appId: puser.env.PUSHER_APP_ID,
+    appId: dockerSecret('PUSHER_APP_ID'),
     key: '518ab0476ccf565431b1',
     secret: dockerSecret('PUSHER_SECRET'),
     cluster: 'mt1',
