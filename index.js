@@ -20,9 +20,11 @@ const pusher = new Pusher({
 
 (async () => {
     await app.start(process.env.PORT || 3000);
+    const workspaceEmojiResponse = await app.client.emoji.list();
+    const workspaceEmoji = workspaceEmojiResponse.emoji;
 
     app.event('reaction_added', ({payload}) => {
-        console.log(payload);
+        // console.log(payload);
 
         let emojiName = payload.reaction;
 
@@ -30,9 +32,13 @@ const pusher = new Pusher({
             emojiName = emojiName.split('::')[0];
         }
 
-        const reactionEmoji = emoji(emojiName);
+        let reactionEmoji = emoji(emojiName);
 
-        if(reactionEmoji.length === 0){
+        if(reactionEmoji.length === 0 && workspaceEmoji[emojiName]){
+            reactionEmoji = workspaceEmoji[emojiName];
+        }
+
+        if(!reactionEmoji){
             return true;
         }
 
