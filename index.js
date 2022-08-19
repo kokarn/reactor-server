@@ -39,6 +39,10 @@ const pusher = new Pusher({
         }
 
         if(!reactionEmoji){
+            console.error( `Unable to locate emoji ${ emojiName }` );
+
+            return true;
+        }
             return true;
         }
 

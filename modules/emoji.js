@@ -10,7 +10,7 @@ module.exports = function( rawText ) {
     } );
 
     if ( !emojiData ) {
-        console.error( `Unable to locate emoji ${ rawText }` );
+        // console.error( `Unable to locate emoji ${ rawText }` );
 
         return '';
     }
