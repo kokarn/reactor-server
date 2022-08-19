@@ -43,6 +43,8 @@ const pusher = new Pusher({
 
             return true;
         }
+
+        if(!payload.item_user){
             return true;
         }
 
